@@ -1,13 +1,17 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import productRoutes from './routes/product.routes';
+import categoryRoutes from './routes/categories.routes';
 import {connectDB} from './config/db';
 
 dotenv.config();
 connectDB();
 
 const app = express();
+
 const port  = process.env.PORT ||1000;
+
+app.use(express.json());
 
 
 app.get('/', (req, res)=>{
@@ -15,7 +19,7 @@ app.get('/', (req, res)=>{
 });
 
 app.use('/products', productRoutes);
-
+app.use('/categories', categoryRoutes);
 app.listen(port, ()=>{
     console.log(`Example app listening on port ${port}`);
 })
