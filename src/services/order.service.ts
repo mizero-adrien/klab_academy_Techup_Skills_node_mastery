@@ -1,3 +1,4 @@
+import { Types} from "mongoose"
 import { Order, IOrder } from "../models/order.model";
 import { Cart } from "../models/cart.model";
 
@@ -42,6 +43,10 @@ export const cancelOrder = async (
   userId: string,
   orderId: string
 ): Promise<IOrder | null> => {
+  if (!Types.ObjectId.isValid(orderId)) {
+    return null;
+  }
+
   const order = await Order.findOne({ _id: orderId, user: userId });
 
   if (!order) return null;
@@ -59,5 +64,8 @@ export const getOrderById = async (
   userId: string,
   orderId: string
 ): Promise<IOrder | null> => {
+  if (!Types.ObjectId.isValid(orderId)) {
+    return null;
+  }
   return Order.findOne({ _id: orderId, user: userId }).populate("items.product");
 };
