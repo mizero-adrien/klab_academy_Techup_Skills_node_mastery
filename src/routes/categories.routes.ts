@@ -7,12 +7,14 @@ import {
   deleteCategoryHandler,
 } from "../controllers/category.controller";
 
+import { protect, adminOnly } from "../middleware/auth.middleware";
+
 const router = Router();
 
-router.post("/", createCategoryHandler);
+router.post("/",protect, adminOnly, createCategoryHandler);
 router.get("/", listCategoriesHandler);
 router.get("/:id", getCategoryHandler);
-router.put("/:id", updateCategoryHandler);
-router.delete("/:id", deleteCategoryHandler);
+router.put("/:id",protect, adminOnly, updateCategoryHandler);
+router.delete("/:id",protect, adminOnly, deleteCategoryHandler);
 
 export default router;
