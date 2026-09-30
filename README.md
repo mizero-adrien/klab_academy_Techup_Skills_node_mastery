@@ -226,6 +226,23 @@ Route → Controller → Service → Model → MongoDB
 - **`ts-node` crashes with a `fileExists` / internal TypeScript error** — usually a version mismatch; this project pins `typescript@5.4.5` and `ts-node@10.9.2` for compatibility.
 - **404 on an update/delete request** — confirm the URL includes the resource's real `_id` (e.g. `/products/<id>`, not just `/products`).
 
+<!-- {
+  "name": "Jean Uwimana",
+  "email": "jean.uwimana@example.com",
+  "password": "Secret123!"
+} -->
+<!-- {
+  "name": "Wireless Mouse",
+  "description": "Ergonomic wireless mouse with USB receiver",
+  "price": 15.99,
+  "stock": 25,
+  "category": "<real category _id>"
+} -->
+<!-- {
+  "name": "Clothing",
+  "description": "Apparel and fashion items"
+} -->
+
 ## Roadmap
 
 - [x] Additional API routes (categories, products, auth, cart, orders)

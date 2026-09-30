@@ -1,5 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './docs/swagger';
 import productRoutes from './routes/product.routes';
 import categoryRoutes from './routes/categories.routes';
 import authRoutes from './routes/auth.routes';
@@ -21,6 +23,8 @@ app.get('/', (req, res)=>{
     res.send('Hello World! Updated by Adrien');
 });
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 app.use('/products', productRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/auth', authRoutes);
@@ -28,4 +32,5 @@ app.use('/cart', cartRoutes);
 app.use('/orders',orderRoutes);
 app.listen(port, ()=>{
     console.log(`Example app listening on port ${port}`);
+    console.log(`API docs available at http://localhost:${port}/api-docs`);
 })
