@@ -2,12 +2,14 @@
 
 import {Product, IProduct} from '../models/product.model';
 
+
 export const createProduct = async (data: {
     name: string;
     description?: string;
     price: number;
     stock: number;
-    category: string; // Accept category ID as a string
+    category: string;
+    imageUrl?: string;
 }) : Promise<IProduct> => {
     const product = new Product(data);
     return product.save();
@@ -30,6 +32,7 @@ export const updateProduct = async (
     price: number;
     stock: number;
     category: string;
+    imageUrl: string;
   }>
 ): Promise<IProduct | null> => {
   return Product.findByIdAndUpdate(id, data, { new: true }).populate("category");

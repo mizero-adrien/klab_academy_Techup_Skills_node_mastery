@@ -6,13 +6,22 @@ import {
   updateProduct,
   deleteProduct,
 } from "../services/product.service";
+import { uploadToCloudinary } from "../utils/cloudinaryUpload";
+
 
 export const createProductHandler = async (req: Request, res: Response) => {
   try {
-    const product = await createProduct(req.body);
+    let imageUrl: string | undefined;
+
+    if (req.file) {
+      imageUrl = await uploadToCloudinary(req.file.buffer);
+    }
+
+    const product = await createProduct({ ...req.body, imageUrl });
     res.status(201).json(product);
-  } catch (error) {
-    res.status(400).json({ message: "Failed to create product", error });
+  } catch (error: any) {
+    console.error("Create product error:", error);
+    res.status(400).json({ message: "Failed to create product", error: error.message });
   }
 };
 
@@ -33,11 +42,22 @@ export const getProductHandler = async (req: Request, res: Response) => {
 
 export const updateProductHandler = async (req: Request, res: Response) => {
   const id = String(req.params.id);
-  const product = await updateProduct(id, req.body);
-  if (!product) {
-    return res.status(404).json({ message: "Product not found" });
+
+  try {
+    let updateData = { ...req.body };
+
+    if (req.file) {
+      updateData.imageUrl = await uploadToCloudinary(req.file.buffer);
+    }
+
+    const product = await updateProduct(id, updateData);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.json(product);
+  } catch (error) {
+    res.status(400).json({ message: "Failed to update product", error });
   }
-  res.json(product);
 };
 
 export const deleteProductHandler = async (req: Request, res: Response) => {

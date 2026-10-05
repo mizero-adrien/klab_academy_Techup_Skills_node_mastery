@@ -5,7 +5,8 @@ export interface IProduct extends Document {
     description?: string;
     price: number;
     stock: number;
-    category: Types.ObjectId; // Reference to Category model
+    category: Types.ObjectId; 
+    imageUrl?: string;
 }
 
 const productSchema   = new Schema<IProduct>({
@@ -14,6 +15,7 @@ const productSchema   = new Schema<IProduct>({
     price : {type: Number, required: true, min: 0},
     stock : {type: Number, required: true, min: 0, default: 0},
     category : {type: Schema.Types.ObjectId, ref: 'Category', required: true},
+    imageUrl : {type: String, required: false},
 },
     {timestamps: true}
 )
