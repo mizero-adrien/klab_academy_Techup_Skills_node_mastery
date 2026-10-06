@@ -51,6 +51,20 @@ export const swaggerSpec = {
           password: { type: "string" },
         },
       },
+      ForgotPasswordInput: {
+        type: "object",
+        required: ["email"],
+        properties: {
+          email: { type: "string" },
+        },
+      },
+      ResetPasswordInput: {
+        type: "object",
+        required: ["password"],
+        properties: {
+          password: { type: "string" },
+        },
+      },
     },
   },
   paths: {
@@ -87,6 +101,46 @@ export const swaggerSpec = {
         responses: {
           "200": { description: "Login successful, returns token and user" },
           "401": { description: "Invalid email or password" },
+        },
+      },
+    },
+    "/auth/forgot-password": {
+      post: {
+        tags: ["Auth"],
+        summary: "Request a password reset email",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/ForgotPasswordInput" },
+            },
+          },
+        },
+        responses: {
+          "200": {
+            description: "Generic confirmation message (sent whether or not the email exists)",
+          },
+        },
+      },
+    },
+    "/auth/reset-password/{token}": {
+      post: {
+        tags: ["Auth"],
+        summary: "Reset password using a valid reset token",
+        parameters: [
+          { name: "token", in: "path", required: true, schema: { type: "string" } },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/ResetPasswordInput" },
+            },
+          },
+        },
+        responses: {
+          "200": { description: "Password reset successfully" },
+          "400": { description: "Invalid or expired reset token" },
         },
       },
     },

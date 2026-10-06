@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { registerUser, loginUser } from "../services/auth.service";
+import { registerUser, loginUser, forgotPassword, resetPassword } from "../services/auth.service";
 
 export const registerHandler = async (req: Request, res: Response) => {
   try {
@@ -32,4 +32,34 @@ export const loginHandler = async (req: Request, res: Response) => {
       role: result.user.role,
     },
   });
+};
+
+export const forgotPasswordHandler  =  async (req: Request, res: Response) =>{
+  const { email } = req.body;
+  try {
+    await forgotPassword(email);
+    res.json({ message: "If an account with that email exists, a password reset link has been sent."});
+  } catch (error){
+    res.status(500).json({ message: " something went wrong!",error});
+  }
+};
+
+export const resetPasswordHandler = async (req: Request, res: Response) => {
+  
+  const token = String(req.params.token);
+  const { password } = req.body;
+
+
+  try {
+    const success = await resetPassword(token, password);
+
+    if (!success) {
+      return res.status(400).json({ message: "Invalid or expired reset token" });
+    }
+
+    res.json({ message: "Password has been reset successfully" });
+  } catch (error: any) {
+    
+    res.status(500).json({ message: "Something went wrong", error: error.message });
+  }
 };

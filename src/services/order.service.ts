@@ -1,6 +1,9 @@
 import { Types} from "mongoose"
 import { Order, IOrder } from "../models/order.model";
 import { Cart } from "../models/cart.model";
+import { sendEmail } from "../utils/sendEmail";
+import { User  } from "../models/user.model";
+import { orderConfirmationTemplate } from "../templates/orderConfirmation.template";
 
 export const createOrderFromCart = async (userId: string): Promise<IOrder> => {
   const cart = await Cart.findOne({ user: userId }).populate("items.product");
@@ -31,6 +34,20 @@ export const createOrderFromCart = async (userId: string): Promise<IOrder> => {
 
   cart.items = [];
   await cart.save();
+
+  // Send order confirmation email
+  const user = await User.findById(userId);
+  if (user) {
+    const html = orderConfirmationTemplate(
+      user.name,
+      String(order._id),
+      totalAmount
+    );
+
+    sendEmail(user.email, "Order Confirmation", html).catch((error) => {
+      console.error("Order confirmation email failed, but order succeeded:", error);
+    });
+  }
 
   return order;
 };
