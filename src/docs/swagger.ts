@@ -5,7 +5,9 @@ export const swaggerSpec = {
     version: "1.0.0",
     description: "REST API for a simple ecommerce platform: categories, products, auth, cart, and orders.",
   },
-  servers: [{ url: "http://localhost:1000" }],
+  servers: [
+    { url: "https://your-actual-render-url.onrender.com" },
+    { url: "http://localhost:1000" }],
   components: {
     securitySchemes: {
       bearerAuth: {
