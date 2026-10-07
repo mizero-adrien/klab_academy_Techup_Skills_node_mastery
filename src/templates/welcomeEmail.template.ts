@@ -20,7 +20,7 @@ export const welcomeEmailTemplate = (name: string): string => {
               <tr>
                 <td style="padding: 32px; color: #333333; font-size: 16px; line-height: 1.6;">
                   <p style="margin: 0 0 16px;">Hi ${name},</p>
-                  <p style="margin: 0 0 16px;">Thank you for registering with TechUpSkills. Your account is ready to use.</p>
+                  <p style="margin: 0 0 16px;">Thank you for registering with TechUp Shop. Your account is ready to use.</p>
                   <p style="margin: 0;">Happy shopping!</p>
                 </td>
               </tr>
