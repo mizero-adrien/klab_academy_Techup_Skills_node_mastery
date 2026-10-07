@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './docs/swagger';
 import productRoutes from './routes/product.routes';
@@ -16,6 +17,8 @@ const app = express();
 
 const port  = process.env.PORT ||1000;
 
+
+app.use(cors());
 app.use(express.json());
 
 
