@@ -1,18 +1,21 @@
-import { transporter } from "../config/mailer";
+import client from "../config/mailer";
 
-export const sendEmail =  async (to: string, subject: string, html: string): Promise<void> => {
-    try{
-        await transporter.sendMail({
-            from: process.env.EMAIL_FROM,
-            to,
-            subject,
-            html,
-        });
-        console.log(`Email sent succesfully to ${to}`);
-    } catch (error) {
-        console.error("Failed to send email to ${to}:", error);
-        throw error;
-    }
+export const sendEmail = async (
+  to: string,
+  subject: string,
+  html: string
+): Promise<void> => {
+  try {
+    await client.transactionalEmails.sendTransacEmail({
+      sender: { email: process.env.EMAIL_FROM as string },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+    });
+    console.log(`Email sent successfully to ${to}`);
+  } catch (error) {
+    console.error(`Failed to send email to ${to}:`, error);
+    throw error;
+  }
 };
-   
 
