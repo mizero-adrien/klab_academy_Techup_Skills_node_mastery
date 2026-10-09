@@ -53,7 +53,9 @@ export const createOrderFromCart = async (userId: string): Promise<IOrder> => {
 };
 
 export const getUserOrders = async (userId: string): Promise<IOrder[]> => {
-  return Order.find({ user: userId }).populate("items.product");
+  return Order.find({ user: userId })
+  .sort({ createdAt: -1 })
+  .populate("items.product");
 };
 
 export const cancelOrder = async (

@@ -36,4 +36,5 @@ const orderSchema = new Schema<IOrder>(
   { timestamps: true }
 );
 
+orderSchema.index({ user: 1, createdAt: -1 });
 export const Order = model<IOrder>("Order", orderSchema);

@@ -14,7 +14,12 @@ const productSchema   = new Schema<IProduct>({
     description : {type: String, required: false},
     price : {type: Number, required: true, min: 0},
     stock : {type: Number, required: true, min: 0, default: 0},
-    category : {type: Schema.Types.ObjectId, ref: 'Category', required: true},
+    category : {
+        type: Schema.Types.ObjectId, 
+        ref: 'Category', 
+        required: true,
+        index: true,
+    },
     imageUrl : {type: String, required: false},
 },
     {timestamps: true}

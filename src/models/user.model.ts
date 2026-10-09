@@ -35,4 +35,5 @@ userSchema.methods.comparePassword = async function (
   return bcrypt.compare(candidate, this.password);
 };
 
+userSchema.index({ resetPasswordToken: 1 }, { sparse: true });
 export const User = model<IUser>("User", userSchema);
