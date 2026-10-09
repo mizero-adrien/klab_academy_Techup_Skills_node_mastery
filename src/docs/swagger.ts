@@ -7,7 +7,8 @@ export const swaggerSpec = {
   },
   servers: [
     { url: "https://klab-academy-techup-skills-api.onrender.com" },
-    { url: "http://localhost:1000" }],
+    { url: "http://localhost:1000" },
+  ],
   components: {
     securitySchemes: {
       bearerAuth: {
@@ -25,6 +26,21 @@ export const swaggerSpec = {
           description: { type: "string" },
         },
       },
+      CategoryInput: {
+        type: "object",
+        required: ["name"],
+        properties: {
+          name: { type: "string" },
+          description: { type: "string" },
+        },
+      },
+      CategoryUpdateInput: {
+        type: "object",
+        properties: {
+          name: { type: "string" },
+          description: { type: "string" },
+        },
+      },
       Product: {
         type: "object",
         properties: {
@@ -34,6 +50,37 @@ export const swaggerSpec = {
           price: { type: "number" },
           stock: { type: "number" },
           category: { type: "string" },
+          imageUrl: { type: "string" },
+        },
+      },
+      ProductFormInput: {
+        type: "object",
+        required: ["name", "price", "category"],
+        properties: {
+          name: { type: "string" },
+          description: { type: "string" },
+          price: { type: "number" },
+          stock: { type: "number" },
+          category: { type: "string", description: "A real category _id" },
+          image: { type: "string", format: "binary" },
+        },
+      },
+      ProductUpdateInput: {
+        type: "object",
+        properties: {
+          name: { type: "string" },
+          description: { type: "string" },
+          price: { type: "number" },
+          stock: { type: "number" },
+          category: { type: "string", description: "A real category _id" },
+          image: { type: "string", format: "binary" },
+        },
+      },
+      CartQuantityInput: {
+        type: "object",
+        required: ["quantity"],
+        properties: {
+          quantity: { type: "number", minimum: 1 },
         },
       },
       RegisterInput: {
@@ -160,12 +207,13 @@ export const swaggerSpec = {
           required: true,
           content: {
             "application/json": {
-              schema: { $ref: "#/components/schemas/Category" },
+              schema: { $ref: "#/components/schemas/CategoryInput" },
             },
           },
         },
         responses: {
           "201": { description: "Category created" },
+          "400": { description: "Validation error or duplicate name" },
           "401": { description: "No token provided" },
           "403": { description: "Admin access required" },
         },
@@ -183,7 +231,20 @@ export const swaggerSpec = {
         summary: "Update a category (admin only)",
         security: [{ bearerAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
-        responses: { "200": { description: "Category updated" }, "404": { description: "Not found" } },
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/CategoryUpdateInput" },
+            },
+          },
+        },
+        responses: {
+          "200": { description: "Category updated" },
+          "401": { description: "No token provided" },
+          "403": { description: "Admin access required" },
+          "404": { description: "Not found" },
+        },
       },
       delete: {
         tags: ["Categories"],
@@ -204,18 +265,19 @@ export const swaggerSpec = {
       },
       post: {
         tags: ["Products"],
-        summary: "Create a product (admin only)",
+        summary: "Create a product with an optional image (admin only)",
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
-            "application/json": {
-              schema: { $ref: "#/components/schemas/Product" },
+            "multipart/form-data": {
+              schema: { $ref: "#/components/schemas/ProductFormInput" },
             },
           },
         },
         responses: {
           "201": { description: "Product created" },
+          "400": { description: "Validation error or invalid image" },
           "401": { description: "No token provided" },
           "403": { description: "Admin access required" },
         },
@@ -230,10 +292,21 @@ export const swaggerSpec = {
       },
       put: {
         tags: ["Products"],
-        summary: "Update a product (admin only)",
+        summary: "Update a product, optionally replacing its image (admin only)",
         security: [{ bearerAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
-        responses: { "200": { description: "Product updated" }, "404": { description: "Not found" } },
+        requestBody: {
+          content: {
+            "multipart/form-data": {
+              schema: { $ref: "#/components/schemas/ProductUpdateInput" },
+            },
+          },
+        },
+        responses: {
+          "200": { description: "Product updated" },
+          "400": { description: "Validation error or invalid image" },
+          "404": { description: "Not found" },
+        },
       },
       delete: {
         tags: ["Products"],
@@ -263,7 +336,7 @@ export const swaggerSpec = {
                 required: ["productId", "quantity"],
                 properties: {
                   productId: { type: "string" },
-                  quantity: { type: "number" },
+                  quantity: { type: "number", minimum: 1 },
                 },
               },
             },
@@ -278,7 +351,19 @@ export const swaggerSpec = {
         summary: "Update quantity of a cart item",
         security: [{ bearerAuth: [] }],
         parameters: [{ name: "productId", in: "path", required: true, schema: { type: "string" } }],
-        responses: { "200": { description: "Cart updated" }, "404": { description: "Item not found" } },
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/CartQuantityInput" },
+            },
+          },
+        },
+        responses: {
+          "200": { description: "Cart updated" },
+          "401": { description: "No token provided" },
+          "404": { description: "Cart or item not found" },
+        },
       },
       delete: {
         tags: ["Cart"],
@@ -299,7 +384,7 @@ export const swaggerSpec = {
     "/orders": {
       get: {
         tags: ["Orders"],
-        summary: "List my past orders",
+        summary: "List my past orders, newest first",
         security: [{ bearerAuth: [] }],
         responses: { "200": { description: "List of orders" } },
       },
