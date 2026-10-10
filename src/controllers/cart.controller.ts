@@ -20,8 +20,8 @@ export const addItemHandler = async (req: AuthRequest, res: Response) => {
   try {
     const cart = await addItemToCart(userId, productId, quantity);
     res.status(201).json(cart);
-  } catch (error) {
-    res.status(400).json({ message: "Failed to add item to cart", error });
+  } catch (error: any) {
+    res.status(400).json({ message: error.message || "Failed to add item to cart" });
   }
 };
 

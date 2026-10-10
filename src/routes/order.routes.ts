@@ -6,6 +6,7 @@ import {
   cancelOrderHandler,
 } from "../controllers/order.controller";
 import { protect } from "../middleware/auth.middleware";
+import { validateIdParam } from "../middleware/validate.middleware";
 
 const router = Router();
 
@@ -14,6 +15,6 @@ router.use(protect);
 router.post("/checkout", checkoutHandler);
 router.get("/", listOrdersHandler);
 router.get("/:id", getOrderHandler);
-router.patch("/:id/cancel", cancelOrderHandler);
+router.patch("/:id/cancel", validateIdParam("id"), cancelOrderHandler);
 
 export default router;

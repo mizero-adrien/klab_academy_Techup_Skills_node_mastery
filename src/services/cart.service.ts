@@ -1,6 +1,5 @@
-//full crud + population
-
 import { Cart, ICart } from "../models/cart.model";
+import { Product } from "../models/product.model";
 
 export const getCart = async (userId: string): Promise<ICart | null> => {
   let cart = await Cart.findOne({ user: userId }).populate("items.product");
@@ -16,6 +15,11 @@ export const addItemToCart = async (
   productId: string,
   quantity: number
 ): Promise<ICart> => {
+  const productExists = await Product.exists({ _id: productId });
+  if (!productExists) {
+    throw new Error("Product not found");
+  }
+
   let cart = await Cart.findOne({ user: userId });
   if (!cart) {
     cart = await Cart.create({ user: userId, items: [] });
