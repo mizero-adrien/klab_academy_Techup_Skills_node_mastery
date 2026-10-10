@@ -8,13 +8,16 @@ import {
 } from "../controllers/category.controller";
 
 import { protect, adminOnly } from "../middleware/auth.middleware";
+import { validateBody } from "../middleware/validate.middleware";
+import { createCategorySchema, updateCategorySchema } from "../schemas/category.schema";
 
 const router = Router();
 
-router.post("/",protect, adminOnly, createCategoryHandler);
 router.get("/", listCategoriesHandler);
 router.get("/:id", getCategoryHandler);
-router.put("/:id",protect, adminOnly, updateCategoryHandler);
+
+router.post("/",protect, adminOnly, validateBody(createCategorySchema), createCategoryHandler);
+router.put("/:id",protect, adminOnly, validateBody(updateCategorySchema), updateCategoryHandler);
 router.delete("/:id",protect, adminOnly, deleteCategoryHandler);
 
 export default router;
