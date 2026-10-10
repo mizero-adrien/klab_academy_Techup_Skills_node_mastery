@@ -1,18 +1,23 @@
 //full CRUD + population
 
-import {Product, IProduct} from '../models/product.model';
-
+import { Product, IProduct } from "../models/product.model";
+import { Category } from "../models/category.model";
 
 export const createProduct = async (data: {
-    name: string;
-    description?: string;
-    price: number;
-    stock: number;
-    category: string;
-    imageUrl?: string;
-}) : Promise<IProduct> => {
-    const product = new Product(data);
-    return product.save();
+  name: string;
+  description?: string;
+  price: number;
+  stock?: number;
+  category: string;
+  imageUrl?: string;
+}): Promise<IProduct> => {
+  const categoryExists = await Category.exists({ _id: data.category });
+  if (!categoryExists) {
+    throw new Error("Category not found");
+  }
+
+  const product = new Product(data);
+  return product.save();
 };
 
 export const getAllProducts = async (categoryId?: string): Promise<IProduct[]> => {
@@ -35,6 +40,13 @@ export const updateProduct = async (
     imageUrl: string;
   }>
 ): Promise<IProduct | null> => {
+  if (data.category) {
+    const categoryExists = await Category.exists({ _id: data.category });
+    if (!categoryExists) {
+      throw new Error("Category not found");
+    }
+  }
+
   return Product.findByIdAndUpdate(id, data, { new: true }).populate("category");
 };
 

@@ -8,13 +8,22 @@ import {
 } from "../controllers/product.controller";
 import { protect, adminOnly } from "../middleware/auth.middleware";
 import { upload } from "../middleware/upload.middleware";
+import { validateBody } from "../middleware/validate.middleware";
+import { createProductSchema, updateProductSchema } from "../schemas/product.schema";
 
 const router = Router();
 
-router.post("/", protect, adminOnly, upload.single("image"), createProductHandler);
 router.get("/", listProductsHandler);
 router.get("/:id", getProductHandler);
-router.put("/:id",protect, adminOnly, upload.single("image"), updateProductHandler);
+
+router.post("/", 
+  protect, 
+  adminOnly, 
+  upload.single("image"),
+  validateBody(createProductSchema),
+  createProductHandler);
+
+router.put("/:id",protect, adminOnly, upload.single("image"), validateBody(updateProductSchema), updateProductHandler);
 router.delete("/:id", protect, adminOnly, deleteProductHandler);
 
 export default router;
