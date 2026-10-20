@@ -10,8 +10,11 @@ export const registerHandler = async (req: Request, res: Response) => {
       email: user.email,
       role: user.role,
     });
-  } catch (error) {
-    res.status(400).json({ message: "Registration failed", error });
+  } catch (error: any) {
+    if (error?.code === 11000) {
+      return res.status(409).json({ message: "An account with this email already exists" });
+    }
+    res.status(400).json({ message: "Registration failed" });
   }
 };
 
