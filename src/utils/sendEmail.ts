@@ -1,21 +1,25 @@
 import client from "../config/mailer";
+import { APP_NAME } from "../config/app";
 
 export const sendEmail = async (
   to: string,
   subject: string,
-  html: string
+  html: string,
+  text?: string
 ): Promise<void> => {
-  try {
-    await client.transactionalEmails.sendTransacEmail({
-      sender: { email: process.env.EMAIL_FROM as string },
-      to: [{ email: to }],
-      subject,
-      htmlContent: html,
-    });
-    console.log(`Email sent successfully to ${to}`);
-  } catch (error) {
-    console.error(`Failed to send email to ${to}:`, error);
-    throw error;
-  }
-};
+  const senderEmail = process.env.EMAIL_FROM?.trim();
 
+  if (!senderEmail) {
+    throw new Error("EMAIL_FROM is not configured");
+  }
+
+  await client.transactionalEmails.sendTransacEmail({
+    sender: { email: senderEmail, name: APP_NAME },
+    to: [{ email: to }],
+    subject,
+    htmlContent: html,
+    ...(text ? { textContent: text } : {}),
+  });
+
+  console.log(`Email "${subject}" sent`);
+};

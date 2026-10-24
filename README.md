@@ -106,6 +106,9 @@ CLOUDINARY_API_SECRET=your_api_secret
 
 BREVO_API_KEY=your_brevo_api_key
 EMAIL_FROM=your_verified_sender_email
+
+FRONTEND_URL=http://localhost:5173
+APP_NAME=TechupMart
 ```
 
 | Variable | Description |
@@ -116,6 +119,8 @@ EMAIL_FROM=your_verified_sender_email
 | `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | Credentials for uploading and serving product images |
 | `BREVO_API_KEY` | API key for sending transactional emails via Brevo's HTTP API |
 | `EMAIL_FROM` | Verified sender address emails are sent from |
+| `FRONTEND_URL` | Public URL of the storefront, used for links in emails. Required in production; defaults to `http://localhost:5173` in development |
+| `APP_NAME` | Display name used in emails (defaults to `TechupMart`) |
 
 `.env` is git-ignored; `.env.example` documents the required keys without real values. When deploying, these must also be set in your hosting provider's dashboard (e.g. Render's **Environment** tab) — a `.env` file is never read in production.
 

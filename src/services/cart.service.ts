@@ -69,3 +69,7 @@ export const removeCartItem = async (
   await cart.save();
   return cart.populate("items.product");
 };
+
+export const clearCart = async (userId: string): Promise<void> => {
+  await Cart.findOneAndUpdate({ user: userId }, { items: [] });
+};

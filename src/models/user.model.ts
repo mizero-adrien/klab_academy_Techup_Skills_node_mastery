@@ -8,6 +8,7 @@ export interface IUser extends Document {
     role: 'customer' | 'admin';
     resetPasswordToken?: string;
     resetPasswordExpires?: Date;
+    passwordChangedAt?: Date;
     comparePassword(candidate: string) : Promise<boolean>;
 }
 
@@ -18,6 +19,7 @@ const userSchema = new Schema<IUser>(
     password: { type: String, required: true },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
+    passwordChangedAt: { type: Date },
     role: { type: String, enum: ["customer", "admin"], default: "customer" },
   },
   { timestamps: true }
@@ -25,8 +27,14 @@ const userSchema = new Schema<IUser>(
 
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
+
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+
+  // A brand new account has no "previous" password, so only record real changes
+  if (!this.isNew) {
+    this.passwordChangedAt = new Date();
+  }
 });
 
 userSchema.methods.comparePassword = async function (

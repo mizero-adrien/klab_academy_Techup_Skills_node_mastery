@@ -19,22 +19,27 @@ export const registerHandler = async (req: Request, res: Response) => {
 };
 
 export const loginHandler = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-  const result = await loginUser(email, password);
+  try {
+    const { email, password } = req.body;
+    const result = await loginUser(email, password);
 
-  if (!result) {
-    return res.status(401).json({ message: "Invalid email or password" });
+    if (!result) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    res.json({
+      token: result.token,
+      user: {
+        id: result.user._id,
+        name: result.user.name,
+        email: result.user.email,
+        role: result.user.role,
+      },
+    });
+  } catch (error) {
+    console.error("Login failed:", error);
+    res.status(500).json({ message: "Login failed. Please try again." });
   }
-
-  res.json({
-    token: result.token,
-    user: {
-      id: result.user._id,
-      name: result.user.name,
-      email: result.user.email,
-      role: result.user.role,
-    },
-  });
 };
 
 export const forgotPasswordHandler  =  async (req: Request, res: Response) =>{
@@ -42,8 +47,9 @@ export const forgotPasswordHandler  =  async (req: Request, res: Response) =>{
   try {
     await forgotPassword(email);
     res.json({ message: "If an account with that email exists, a password reset link has been sent."});
-  } catch (error){
-    res.status(500).json({ message: " something went wrong!",error});
+  } catch (error) {
+    console.error("Forgot password failed:", error);
+    res.status(500).json({ message: "Something went wrong" });
   }
 };
 
@@ -61,8 +67,8 @@ export const resetPasswordHandler = async (req: Request, res: Response) => {
     }
 
     res.json({ message: "Password has been reset successfully" });
-  } catch (error: any) {
-    
-    res.status(500).json({ message: "Something went wrong", error: error.message });
+  } catch (error) {
+    console.error("Reset password failed:", error);
+    res.status(500).json({ message: "Something went wrong" });
   }
 };

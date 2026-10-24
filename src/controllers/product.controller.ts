@@ -21,7 +21,7 @@ export const createProductHandler = async (req: Request, res: Response) => {
     res.status(201).json(product);
   } catch (error: any) {
     console.error("Create product error:", error);
-    res.status(400).json({ message: "Failed to create product", error: error.message });
+    res.status(400).json({ message: error.message || "Failed to create product" });
   }
 };
 

@@ -24,6 +24,10 @@ export const swaggerSpec = {
           _id: { type: "string" },
           name: { type: "string" },
           description: { type: "string" },
+          imageUrl: { type: "string" },
+          productCount: { type: "number" },
+          createdAt: { type: "string", format: "date-time" },
+          updatedAt: { type: "string", format: "date-time" },
         },
       },
       CategoryInput: {
@@ -32,6 +36,7 @@ export const swaggerSpec = {
         properties: {
           name: { type: "string" },
           description: { type: "string" },
+          image: { type: "string", format: "binary" },
         },
       },
       CategoryUpdateInput: {
@@ -39,6 +44,7 @@ export const swaggerSpec = {
         properties: {
           name: { type: "string" },
           description: { type: "string" },
+          image: { type: "string", format: "binary" },
         },
       },
       Product: {
@@ -48,9 +54,12 @@ export const swaggerSpec = {
           name: { type: "string" },
           description: { type: "string" },
           price: { type: "number" },
+          oldPrice: { type: "number" },
           stock: { type: "number" },
           category: { type: "string" },
           imageUrl: { type: "string" },
+          createdAt: { type: "string", format: "date-time" },
+          updatedAt: { type: "string", format: "date-time" },
         },
       },
       ProductFormInput: {
@@ -81,6 +90,124 @@ export const swaggerSpec = {
         required: ["quantity"],
         properties: {
           quantity: { type: "number", minimum: 1 },
+        },
+      },
+      CartItem: {
+        type: "object",
+        properties: {
+          product: { $ref: "#/components/schemas/Product" },
+          quantity: { type: "number", minimum: 1 },
+        },
+      },
+      Cart: {
+        type: "object",
+        properties: {
+          _id: { type: "string" },
+          user: { type: "string" },
+          items: {
+            type: "array",
+            items: { $ref: "#/components/schemas/CartItem" },
+          },
+          createdAt: { type: "string", format: "date-time" },
+          updatedAt: { type: "string", format: "date-time" },
+        },
+      },
+      DeliveryInput: {
+        type: "object",
+        required: ["fullName", "phone", "address", "city"],
+        properties: {
+          fullName: { type: "string", minLength: 2, maxLength: 100 },
+          phone: { type: "string", minLength: 9, maxLength: 13 },
+          address: { type: "string", minLength: 5, maxLength: 200 },
+          city: { type: "string", minLength: 2, maxLength: 50 },
+        },
+      },
+      OrderInputItem: {
+        type: "object",
+        required: ["productId", "quantity"],
+        properties: {
+          productId: { type: "string", description: "A real product _id" },
+          quantity: { type: "number", minimum: 1, maximum: 100 },
+        },
+      },
+      CreateOrderInput: {
+        type: "object",
+        required: ["items", "delivery", "paymentMethod"],
+        properties: {
+          items: {
+            type: "array",
+            minItems: 1,
+            maxItems: 50,
+            items: { $ref: "#/components/schemas/OrderInputItem" },
+          },
+          delivery: { $ref: "#/components/schemas/DeliveryInput" },
+          paymentMethod: { type: "string", enum: ["momo", "cash"] },
+        },
+      },
+      OrderItem: {
+        type: "object",
+        properties: {
+          product: { type: "string" },
+          quantity: { type: "number" },
+          priceAtPurchase: { type: "number" },
+          productName: { type: "string" },
+          productImage: { type: "string" },
+        },
+      },
+      Order: {
+        type: "object",
+        properties: {
+          _id: { type: "string" },
+          user: { type: "string" },
+          userName: { type: "string" },
+          userEmail: { type: "string" },
+          items: {
+            type: "array",
+            items: { $ref: "#/components/schemas/OrderItem" },
+          },
+          totalAmount: { type: "number" },
+          status: {
+            type: "string",
+            enum: ["pending", "paid", "shipped", "delivered", "cancelled"],
+          },
+          delivery: { $ref: "#/components/schemas/DeliveryInput" },
+          paymentMethod: { type: "string", enum: ["momo", "cash"] },
+          createdAt: { type: "string", format: "date-time" },
+          updatedAt: { type: "string", format: "date-time" },
+        },
+      },
+      UpdateOrderStatusInput: {
+        type: "object",
+        required: ["status"],
+        properties: {
+          status: {
+            type: "string",
+            enum: ["pending", "paid", "shipped", "delivered", "cancelled"],
+          },
+        },
+      },
+      AdminOrderList: {
+        type: "object",
+        properties: {
+          items: {
+            type: "array",
+            items: { $ref: "#/components/schemas/Order" },
+          },
+          total: { type: "number" },
+          page: { type: "number" },
+          limit: { type: "number" },
+          statusCounts: {
+            type: "object",
+            properties: {
+              pending: { type: "number" },
+              paid: { type: "number" },
+              shipped: { type: "number" },
+              delivered: { type: "number" },
+              cancelled: { type: "number" },
+            },
+          },
+          totalRevenue: { type: "number" },
+          pendingOrders: { type: "number" },
         },
       },
       RegisterInput: {
@@ -132,6 +259,7 @@ export const swaggerSpec = {
         responses: {
           "201": { description: "User created" },
           "400": { description: "Validation error" },
+          "409": { description: "An account with this email already exists" },
         },
       },
     },
@@ -201,19 +329,19 @@ export const swaggerSpec = {
       },
       post: {
         tags: ["Categories"],
-        summary: "Create a category (admin only)",
+        summary: "Create a category with an optional image (admin only)",
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
-            "application/json": {
+            "multipart/form-data": {
               schema: { $ref: "#/components/schemas/CategoryInput" },
             },
           },
         },
         responses: {
           "201": { description: "Category created" },
-          "400": { description: "Validation error or duplicate name" },
+          "400": { description: "Validation error or invalid image" },
           "401": { description: "No token provided" },
           "403": { description: "Admin access required" },
         },
@@ -228,19 +356,20 @@ export const swaggerSpec = {
       },
       put: {
         tags: ["Categories"],
-        summary: "Update a category (admin only)",
+        summary: "Update a category, optionally replacing its image (admin only)",
         security: [{ bearerAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         requestBody: {
           required: true,
           content: {
-            "application/json": {
+            "multipart/form-data": {
               schema: { $ref: "#/components/schemas/CategoryUpdateInput" },
             },
           },
         },
         responses: {
           "200": { description: "Category updated" },
+          "400": { description: "Validation error or invalid image" },
           "401": { description: "No token provided" },
           "403": { description: "Admin access required" },
           "404": { description: "Not found" },
@@ -342,7 +471,20 @@ export const swaggerSpec = {
             },
           },
         },
-        responses: { "201": { description: "Item added" } },
+        responses: {
+          "201": { description: "Item added" },
+          "400": { description: "Product not found or validation error" },
+          "401": { description: "No token provided" },
+        },
+      },
+      delete: {
+        tags: ["Cart"],
+        summary: "Empty my cart",
+        security: [{ bearerAuth: [] }],
+        responses: {
+          "204": { description: "Cart cleared" },
+          "401": { description: "No token provided" },
+        },
       },
     },
     "/cart/{productId}": {
@@ -373,20 +515,32 @@ export const swaggerSpec = {
         responses: { "200": { description: "Item removed" } },
       },
     },
-    "/orders/checkout": {
-      post: {
-        tags: ["Orders"],
-        summary: "Create an order from my current cart",
-        security: [{ bearerAuth: [] }],
-        responses: { "201": { description: "Order created" }, "400": { description: "Cart is empty" } },
-      },
-    },
     "/orders": {
       get: {
         tags: ["Orders"],
         summary: "List my past orders, newest first",
         security: [{ bearerAuth: [] }],
         responses: { "200": { description: "List of orders" } },
+      },
+      post: {
+        tags: ["Orders"],
+        summary: "Place an order from a list of items",
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/CreateOrderInput" },
+            },
+          },
+        },
+        responses: {
+          "201": { description: "Order created" },
+          "400": { description: "Validation error or unknown product" },
+          "401": { description: "No token provided" },
+          "404": { description: "User not found" },
+          "409": { description: "Insufficient stock" },
+        },
       },
     },
     "/orders/{id}": {
@@ -401,12 +555,96 @@ export const swaggerSpec = {
     "/orders/{id}/cancel": {
       patch: {
         tags: ["Orders"],
-        summary: "Cancel one of my orders (only while pending)",
+        summary: "Cancel one of my orders (not delivered or already cancelled)",
         security: [{ bearerAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
-          "200": { description: "Order cancelled" },
-          "400": { description: "Only pending orders can be cancelled" },
+          "200": { description: "Order cancelled and stock restored" },
+          "404": { description: "Not found" },
+          "409": { description: "Order is already cancelled, delivered, or status just changed" },
+        },
+      },
+    },
+    "/orders/admin/all": {
+      get: {
+        tags: ["Orders (admin)"],
+        summary: "List all orders with search, status filter and pagination (admin only)",
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: "status",
+            in: "query",
+            required: false,
+            schema: {
+              type: "string",
+              enum: ["pending", "paid", "shipped", "delivered", "cancelled"],
+            },
+          },
+          {
+            name: "q",
+            in: "query",
+            required: false,
+            schema: { type: "string" },
+            description: "Search by customer name, email or order ID",
+          },
+          { name: "page", in: "query", required: false, schema: { type: "number", minimum: 1, default: 1 } },
+          {
+            name: "limit",
+            in: "query",
+            required: false,
+            schema: { type: "number", minimum: 1, maximum: 100, default: 20 },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Paginated orders with status counts and revenue",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/AdminOrderList" },
+              },
+            },
+          },
+          "400": { description: "Invalid status filter" },
+          "401": { description: "No token provided" },
+          "403": { description: "Admin access required" },
+        },
+      },
+    },
+    "/orders/admin/{id}": {
+      get: {
+        tags: ["Orders (admin)"],
+        summary: "Get any order by ID (admin only)",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: {
+          "200": { description: "Order found" },
+          "401": { description: "No token provided" },
+          "403": { description: "Admin access required" },
+          "404": { description: "Not found" },
+        },
+      },
+    },
+    "/orders/admin/{id}/status": {
+      patch: {
+        tags: ["Orders (admin)"],
+        summary: "Change an order status (admin only)",
+        description:
+          "Allowed transitions: pending → paid or cancelled, paid → shipped, shipped → delivered. delivered and cancelled are final.",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/UpdateOrderStatusInput" },
+            },
+          },
+        },
+        responses: {
+          "200": { description: "Order status updated" },
+          "400": { description: "Invalid status or transition not allowed" },
+          "401": { description: "No token provided" },
+          "403": { description: "Admin access required" },
           "404": { description: "Not found" },
         },
       },

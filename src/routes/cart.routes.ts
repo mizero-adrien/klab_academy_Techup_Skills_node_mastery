@@ -4,6 +4,7 @@ import {
   addItemHandler,
   updateItemHandler,
   removeItemHandler,
+  clearCartHandler,
 } from "../controllers/cart.controller";
 import { protect } from "../middleware/auth.middleware";
 import { validateBody, validateIdParam } from "../middleware/validate.middleware";
@@ -22,5 +23,6 @@ router.put(
   updateItemHandler
 );
 router.delete("/:productId", validateIdParam("productId"), removeItemHandler);
+router.delete("/", clearCartHandler);
 
 export default router;

@@ -25,7 +25,7 @@ export const validateIdParam =
 
     if (!result.success) {
       return res.status(400).json({
-        message: "Validation failed",
+        message: "Validation Failed",
         errors: [{ field: paramName, message: result.error.issues[0].message }],
       });
     }

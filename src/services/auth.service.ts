@@ -1,10 +1,16 @@
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { User, IUser } from "../models/user.model";
-// import { transporter } from "../config/mailer";
 import { sendEmail } from "../utils/sendEmail";
 import { welcomeEmailTemplate } from "../templates/welcomeEmail.template";
-import { passwordResetTemplate } from "../templates/passwordReset.template";
+import { passwordResetTemplate, passwordResetText } from "../templates/passwordReset.template";
+import { APP_NAME, getFrontendUrl } from "../config/app";
+
+const RESET_TOKEN_TTL_MS = 15 * 60 * 1000;
+
+const hashToken = (token: string): string => {
+  return crypto.createHash("sha256").update(token).digest("hex");
+};
 
 export const registerUser = async (data: {
   name: string;
@@ -15,9 +21,10 @@ export const registerUser = async (data: {
   await user.save();
 
   const html = welcomeEmailTemplate(user.name);
-  sendEmail(user.email, " welcome to techUp shop", html). catch((error)=> {
-    console.error("welcome email failed but registration succeeded:", error);
-  })
+  sendEmail(user.email, `Welcome to ${APP_NAME}`, html).catch((error) => {
+    console.error("Welcome email failed but registration succeeded:", error);
+  });
+
   return user;
 };
 
@@ -42,20 +49,28 @@ export const loginUser = async (
 export const forgotPassword = async (email: string): Promise<void> => {
   const user = await User.findOne({ email });
 
+  // Always behave the same whether or not the account exists,
+  // so this endpoint cannot be used to discover registered emails.
   if (!user) {
     return;
   }
 
-  const resetToken = crypto.randomBytes(32).toString("hex");
+  const rawToken = crypto.randomBytes(32).toString("hex");
+  const hashedToken = hashToken(rawToken);
 
-  user.resetPasswordToken = resetToken;
-  user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000);
+  user.resetPasswordToken = hashedToken;
+  user.resetPasswordExpires = new Date(Date.now() + RESET_TOKEN_TTL_MS);
   await user.save();
 
-  const resetUrl = `http://localhost:1000/auth/reset-password/${resetToken}`;
+  const resetUrl = `${getFrontendUrl()}/reset-password/${rawToken}`;
   const html = passwordResetTemplate(user.name, resetUrl);
+  const text = passwordResetText(user.name, resetUrl);
 
-  sendEmail(user.email, "Reset Your Password", html).catch((error) => {
+  if (process.env.NODE_ENV !== "production") {
+    console.log("Reset link (development only):", resetUrl);
+  }
+
+  sendEmail(user.email, `Reset your ${APP_NAME} password`, html, text).catch((error) => {
     console.error("Password reset email failed:", error);
   });
 };
@@ -64,9 +79,8 @@ export const resetPassword = async (
   token: string,
   newPassword: string
 ): Promise<boolean> => {
-
   const user = await User.findOne({
-    resetPasswordToken: token,
+    resetPasswordToken: hashToken(token),
     resetPasswordExpires: { $gt: new Date() },
   });
 

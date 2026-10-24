@@ -19,8 +19,4 @@ export const createCategorySchema = z.object({
 export const updateCategorySchema = z.object({
     name: categoryNameField.optional(),
     description: categoryDescriptionField.optional(),
-})
-.refine((data) => Object.keys(data).length > 0, {
-    message: "provide at least one field to update",
-    path: ["body"],
 });
